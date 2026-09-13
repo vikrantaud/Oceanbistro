@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <title>Ocean Bistro — Dive, Spear &amp; Serve | Free Browser Game</title>
 <meta name="description" content="Ocean Bistro is a free browser game: dive the open ocean and spear fish before your air runs out, then cook and serve them in your floating sushi restaurant. Hunt the Kraken and Poseidon for the Legendary Fish.">
 <meta name="keywords" content="Ocean Bistro, Ocean Bistro game, diving game, fishing game, sushi restaurant game, free browser game">
@@ -38,6 +38,7 @@
     overflow:hidden;
     display:flex;align-items:center;justify-content:center;
     height:100vh;
+    height:100dvh;
     -webkit-user-select:none;user-select:none;
   }
   #wrap{
@@ -49,12 +50,15 @@
     overflow:hidden;
     background:#02060f;
   }
-  canvas{display:block;width:100%;height:100%;cursor:crosshair;}
+  /* mobile mode only: fit-to-screen with letterbox — desktop keeps its original sizing */
+  body.touch #wrap{ width:min(100vw, 152.7dvh, 1100px); height:auto; }
+  canvas{display:block;width:100%;height:100%;cursor:crosshair;touch-action:none;-webkit-user-select:none;user-select:none;}
 
   /* ---------- Overlay panels ---------- */
   .panel{
     position:absolute;inset:0;
-    display:flex;flex-direction:column;align-items:center;justify-content:center;
+    display:flex;flex-direction:column;align-items:center;justify-content:safe center;
+    overflow-y:auto;-webkit-overflow-scrolling:touch;
     text-align:center;
     background:radial-gradient(ellipse at 50% 30%, rgba(15,182,196,.18), rgba(2,6,15,.96) 70%);
     z-index:20;
@@ -87,6 +91,29 @@
   #intro .ic-n{ font-size:clamp(18px,2.6vw,30px); color:var(--foam); line-height:1.85; }
   #introSkip{ position:absolute; right:14px; bottom:12px; z-index:41;
     font-size:11px; color:rgba(255,255,255,.5); letter-spacing:.5px; pointer-events:none; }
+  /* ---------- mobile / touch controls ---------- */
+  body.touch{ -webkit-user-select:none; user-select:none; -webkit-touch-callout:none; }
+  #mobileControls,#stickBase{ display:none; }
+  body.touch #mobileControls.on{ display:block; }
+  #mobileControls{ position:fixed; inset:0; z-index:36; pointer-events:none; }
+  .mbtn{ position:fixed; pointer-events:auto; width:66px; height:66px; border-radius:50%;
+    background:rgba(8,38,52,.5); border:2px solid rgba(95,242,224,.55); color:#eafcff;
+    font-size:26px; display:flex; align-items:center; justify-content:center;
+    -webkit-user-select:none; user-select:none; touch-action:none; }
+  .mbtn:active{ background:rgba(95,242,224,.4); }
+  .mbtn.big{ width:88px; height:88px; font-size:38px; border-color:var(--gold); color:var(--gold); }
+  #btnAction{ right:18px; bottom:20px; }
+  #btnMelee{ right:120px; bottom:30px; }
+  #btnDrop{ right:40px; bottom:118px; }
+  body.touch #stickBase.on{ display:block; }
+  #stickBase{ position:fixed; z-index:36; width:104px; height:104px; margin:-52px 0 0 -52px;
+    border-radius:50%; background:rgba(8,38,52,.3); border:2px solid rgba(95,242,224,.35); pointer-events:none; }
+  #stickKnob{ position:absolute; left:50%; top:50%; width:46px; height:46px; transform:translate(-50%,-50%);
+    border-radius:50%; background:rgba(95,242,224,.55); }
+  #rotateHint{ position:fixed; inset:0; z-index:60; background:#02060f; color:var(--aqua);
+    display:none; align-items:center; justify-content:center; text-align:center; padding:24px;
+    font-size:22px; line-height:1.7; }
+  @media (orientation:portrait){ body.touch #rotateHint{ display:flex; } }
   .btn{
     font-family:'Press Start 2P',monospace;
     font-size:13px;
@@ -184,6 +211,17 @@
   .tab{font-family:'Press Start 2P';font-size:10px;padding:9px 14px;border-radius:8px 8px 0 0;cursor:pointer;background:rgba(4,22,34,.6);color:#7fb9c6;border:1px solid rgba(95,242,224,.18);border-bottom:none;}
   .tab.active{background:rgba(15,182,196,.25);color:var(--aqua);}
   .legend-banner{background:linear-gradient(90deg,rgba(255,206,71,.18),rgba(255,138,61,.12));border:1px solid var(--gold);border-radius:12px;padding:10px 18px;margin-top:10px;font-size:13px;}
+  /* ---- mobile shop: compact single-column cards so a whole card is always visible ---- */
+  body.touch .grid{grid-template-columns:1fr;gap:9px;max-height:none;overflow:visible;padding:2px;max-width:560px;}
+  body.touch .card{padding:9px 12px;gap:3px;border-radius:10px;}
+  body.touch .card h3{font-size:15px;}
+  body.touch .card p{font-size:12px;line-height:1.35;}
+  body.touch .card .price{font-size:11px;}
+  body.touch .card button{font-size:13px;padding:7px;margin-top:3px;}
+  body.touch .tab{font-size:10px;padding:7px 10px;}
+  body.touch .section-title{font-size:15px;margin-bottom:2px;}
+  body.touch .sub{font-size:12px;margin-bottom:4px;}
+  body.touch #shop.panel, body.touch #prestige.panel{padding:3% 4%;justify-content:flex-start;}
 
   /* ---- player setup ---- */
   .count-row{display:flex;gap:12px;margin:14px 0;}
@@ -245,6 +283,16 @@
       <div class="ic-n">no one 😭</div>
     </div>
     <div id="introSkip">click anywhere to skip ▶</div>
+  </div>
+
+  <!-- CONTROL MODE CHOOSER -->
+  <div id="modeChoose" class="panel hidden" style="z-index:45">
+    <div class="logo" style="font-size:clamp(18px,3.2vw,32px)">HOW ARE YOU<br><span class="b">PLAYING?</span></div>
+    <div class="row" style="margin-top:28px">
+      <button class="btn gold" id="chooseDesktop">🖥️ Desktop</button>
+      <button class="btn gold" id="chooseMobile">📱 Mobile</button>
+    </div>
+    <div class="menu-foot" id="chooseHint"></div>
   </div>
 
   <div id="menu" class="panel">
@@ -417,6 +465,15 @@
     </div>
   </div>
 </div>
+
+<!-- MOBILE TOUCH CONTROLS -->
+<div id="mobileControls">
+  <div id="btnMelee" class="mbtn">🔪</div>
+  <div id="btnDrop" class="mbtn">⬇️</div>
+  <div id="btnAction" class="mbtn big">✊</div>
+</div>
+<div id="stickBase"><div id="stickKnob"></div></div>
+<div id="rotateHint">🔄<br>Rotate your device sideways<br>to play Ocean Bistro</div>
 
 <script>
 "use strict";
@@ -748,6 +805,7 @@ function setMode(m){
   else if(m==='atlantis'){ /* full-canvas mode, no panel */ }
   else if(m==='cook'){ /* full-canvas cutscene, no panel */ }
   else show(m);
+  updateMobileControls(m);
 }
 
 /* ---------- toast ---------- */
@@ -890,6 +948,82 @@ addEventListener('mouseup',e=>{
   }
 });
 cv.addEventListener('contextmenu',e=>e.preventDefault());
+
+/* ================= MOBILE / TOUCH CONTROLS ================= */
+const isTouch = ('ontouchstart' in window) || (navigator.maxTouchPoints>0);
+let mobileMode=false;
+function setControlMode(on){ mobileMode=on; document.body.classList.toggle('touch', on); updateMobileControls(mode); }
+function touchPos(t){ const r=cv.getBoundingClientRect(); return { x:(t.clientX-r.left)/r.width*W, y:(t.clientY-r.top)/r.height*H }; }
+function updateMobileControls(m){ const mc=el('mobileControls'); if(!mc) return;
+  const on = mobileMode && (m==='dive'||m==='restaurant'||m==='atlantis');
+  mc.classList.toggle('on', on);
+  const me=el('btnMelee'), dr=el('btnDrop');
+  if(me){ me.style.display = on ? 'flex' : 'none'; me.textContent = (m==='restaurant') ? '🥤' : '🔪'; }
+  if(dr) dr.style.display=(mobileMode&&m==='restaurant')?'flex':'none';
+}
+function mobileSpaceDown(){ const fresh=!keys.__spaceHeld; keys[' ']=true;
+  if(mode==='cook'){ endCook(); keys.__spaceHeld=true; return; }
+  if(mode==='restaurant'){ if(rest&&rest.prep){ const st=rest.prep.stage;
+      if(st==='seaweed'){ rest.prep.__mtog=!rest.prep.__mtog; prepKey(rest.prep.__mtog?'d':'a', true); }
+      else prepKey(' ', fresh);
+    } else restAction(); }
+  else if(mode==='atlantis'&&atl){ if(atl.carving) atlCarveSlice(); else atlOrderServe(); }
+  else if(mode==='dive'&&dive){ if(dive.grab&&fresh) grabMash(); if(dive.reel&&fresh) reelMash(); }
+  keys.__spaceHeld=true;
+}
+function mobileSpaceUp(){ keys[' ']=false; keys.__spaceHeld=false;
+  if(mode==='restaurant'&&rest&&rest.prep&&rest.prep.stage==='rice') finalizeRice(); }
+function bindBtn(id,down,up){ const b=el(id); if(!b) return;
+  b.addEventListener('touchstart',e=>{ e.preventDefault(); e.stopPropagation(); if(down)down(); },{passive:false});
+  b.addEventListener('touchend',  e=>{ e.preventDefault(); e.stopPropagation(); if(up)up(); },{passive:false});
+  b.addEventListener('touchcancel',e=>{ if(up)up(); },{passive:false});
+}
+bindBtn('btnAction', mobileSpaceDown, mobileSpaceUp);
+bindBtn('btnMelee', ()=>{ if(mode==='dive'&&dive){ mouse.down=true; knifeSlash(); } else if(mode==='restaurant'){ keys['e']=true; } else if(mode==='atlantis'&&atl&&!atl.carving){ atlCatch(74); } }, ()=>{ mouse.down=false; keys['e']=false; });
+bindBtn('btnDrop', ()=>{ if(mode==='restaurant') restDrop(); }, null);
+let moveId=null, moveOX=0, moveOY=0, aimId=null, aimOX=0, aimOY=0, lastAimX=1, lastAimY=0, cutLastY=null;
+let moveVec={x:0,y:0}, moveActive=false;
+const stickBase=el('stickBase'), stickKnob=el('stickKnob');
+function showStick(cx,cy){ if(!stickBase) return; stickBase.style.left=cx+'px'; stickBase.style.top=cy+'px'; stickBase.classList.add('on'); if(stickKnob){ stickKnob.style.left='50%'; stickKnob.style.top='50%'; } }
+function moveStick(cx,cy){ if(!stickKnob) return; let dx=cx-moveOX, dy=cy-moveOY; const mx=42, d=Math.hypot(dx,dy); if(d>mx){ dx=dx/d*mx; dy=dy/d*mx; } stickKnob.style.left='calc(50% + '+dx+'px)'; stickKnob.style.top='calc(50% + '+dy+'px)'; }
+function hideStick(){ if(stickBase) stickBase.classList.remove('on'); }
+function clearMove(){ keys['w']=keys['a']=keys['s']=keys['d']=false; }
+function applyAim(dx,dy){ let m=Math.hypot(dx,dy); if(m<8){ dx=lastAimX; dy=lastAimY; m=Math.hypot(dx,dy)||1; } else { lastAimX=dx; lastAimY=dy; } const k=160/m; mouse.x=(dive.px-camX)+dx*k; mouse.y=(dive.py-camY)+dy*k; }
+cv.addEventListener('touchstart',e=>{ if(!mobileMode) return; e.preventDefault(); const r=cv.getBoundingClientRect();
+  for(const t of e.changedTouches){ const cx=t.clientX, cy=t.clientY, p=touchPos(t);
+    if(mode==='cook'){ endCook(); continue; }
+    // prep / carving mini-games take the whole screen
+    if(mode==='restaurant'&&rest&&rest.prep){ mouse.x=p.x; mouse.y=p.y; cutLastY=cy;
+      const st=rest.prep.stage; if(st==='cut') prepSlice(); else if(st==='wasabi') prepGrindMouse(p.x,p.y); continue; }
+    if(mode==='atlantis'&&atl&&atl.carving){ mouse.x=p.x; mouse.y=p.y; cutLastY=cy; atlCarveSlice(); continue; }
+    const leftZone=(cx-r.left) < r.width*0.4;
+    // movement joystick — swim AND walk the restaurant / atlantis floor
+    if((mode==='dive'||mode==='restaurant'||mode==='atlantis') && leftZone && moveId===null){
+      moveId=t.identifier; moveOX=cx; moveOY=cy; showStick(cx,cy); continue; }
+    // right-zone action per mode
+    if(mode==='dive'&&dive&&aimId===null){ aimId=t.identifier; aimOX=cx; aimOY=cy; dive.aiming=true; applyAim(0,0); continue; }
+    if(mode==='atlantis'&&atl){ mouse.x=p.x; mouse.y=p.y; atlCatch(380); continue; }
+  }
+},{passive:false});
+cv.addEventListener('touchmove',e=>{ if(!mobileMode) return; e.preventDefault();
+  for(const t of e.changedTouches){ const cx=t.clientX, cy=t.clientY, p=touchPos(t);
+    if(t.identifier===moveId){ const dx=cx-moveOX, dy=cy-moveOY, m=Math.hypot(dx,dy), max=48, dead=6;
+      if(m<dead){ moveVec.x=0; moveVec.y=0; moveActive=false; }
+      else { const k=Math.min(1,m/max)/m; moveVec.x=dx*k; moveVec.y=dy*k; moveActive=true; }
+      moveStick(cx,cy); }
+    else if(t.identifier===aimId){ applyAim(cx-aimOX, cy-aimOY); }
+    else if(mode==='restaurant'&&rest&&rest.prep){ mouse.x=p.x; mouse.y=p.y; const st=rest.prep.stage;
+      if(st==='wasabi') prepGrindMouse(p.x,p.y);
+      else if(st==='cut'&&cutLastY!=null){ const d=cy-cutLastY; if(Math.abs(d)>6){ prepCutMove(Math.sign(d)); cutLastY=cy; } } }
+    else if(mode==='atlantis'&&atl&&atl.carving&&cutLastY!=null){ const d=cy-cutLastY; if(Math.abs(d)>6){ atlCarveWheel(Math.sign(d)); cutLastY=cy; } }
+  }
+},{passive:false});
+function endTouchId(t){
+  if(t.identifier===moveId){ moveId=null; clearMove(); hideStick(); moveVec.x=0; moveVec.y=0; moveActive=false; }
+  else if(t.identifier===aimId){ aimId=null; if(mode==='dive'&&dive&&dive.aiming){ fireHarpoon(); dive.aiming=false; dive.aimT=0; } }
+}
+cv.addEventListener('touchend',e=>{ if(!mobileMode) return; e.preventDefault(); for(const t of e.changedTouches) endTouchId(t); },{passive:false});
+cv.addEventListener('touchcancel',e=>{ for(const t of e.changedTouches) endTouchId(t); },{passive:false});
 
 /* ============================================================
    COMBAT
@@ -1437,12 +1571,13 @@ function update(d){
   if(keys['d']||keys['arrowright'])mvx+=1;
   if(keys['w']||keys['arrowup'])   mvy-=1;
   if(keys['s']||keys['arrowdown']) mvy+=1;
+  if(mobileMode && moveActive){ mvx=moveVec.x; mvy=moveVec.y; }
   const moving=(mvx||mvy);
   const sprinting = keys['shift'] && moving && dive.stamina>1 && !dive.aiming;
   if(sprinting) dive.stamina=Math.max(0, dive.stamina-0.85*d);
   else dive.stamina=Math.min(dive.staminaMax, dive.stamina + (moving?0.3:0.55)*d);
   const sp=effSpeed()*(sprinting?1.7:1);
-  if(mvx||mvy){ const m=Math.hypot(mvx,mvy); mvx/=m; mvy/=m; if(mvx) dive.facing=mvx>0?1:-1; }
+  if(mvx||mvy){ const m=Math.hypot(mvx,mvy); if(m>1){ mvx/=m; mvy/=m; } if(Math.abs(mvx)>0.05) dive.facing=mvx>0?1:-1; }
   dive.vx += (mvx*sp - dive.vx)*0.2;
   dive.vy += (mvy*sp - dive.vy)*0.2;
   dive.px += dive.vx*slow + dive.current.x*0.6*slow;
@@ -2321,11 +2456,12 @@ function updateRestaurant(d){
   if(keys['d']||keys['arrowright'])mvx+=1;
   if(keys['w']||keys['arrowup'])mvy-=1;
   if(keys['s']||keys['arrowdown'])mvy+=1;
+  if(mobileMode && moveActive){ mvx=moveVec.x; mvy=moveVec.y; }
   const moving=(mvx||mvy);
   const dashing = keys['shift'] && moving && rest.stamina>1;
   if(dashing){ sp=7.4; rest.stamina=Math.max(0, rest.stamina-0.95*d); }
   else rest.stamina=Math.min(rest.staminaMax, rest.stamina+0.5*d);
-  if(mvx||mvy){const m=Math.hypot(mvx,mvy);mvx/=m;mvy/=m;if(mvx)rest.face=mvx>0?1:-1;}
+  if(mvx||mvy){const m=Math.hypot(mvx,mvy);if(m>1){mvx/=m;mvy/=m;}if(Math.abs(mvx)>0.05)rest.face=mvx>0?1:-1;}
   rest.vx+=(mvx*sp-rest.vx)*0.25; rest.vy+=(mvy*sp-rest.vy)*0.25;
   rest.px+=rest.vx*d; rest.py+=rest.vy*d;
   rest.px=Math.max(FLOOR.x0,Math.min(FLOOR.x1,rest.px));
@@ -3517,7 +3653,8 @@ function updateAtlantis(d){
   let mvx=0,mvy=0;
   if(keys['a']||keys['arrowleft'])mvx-=1; if(keys['d']||keys['arrowright'])mvx+=1;
   if(keys['w']||keys['arrowup'])mvy-=1; if(keys['s']||keys['arrowdown'])mvy+=1;
-  if(mvx||mvy){ const m=Math.hypot(mvx,mvy); atl.px+=mvx/m*4.0*d; atl.py+=mvy/m*4.0*d; if(mvx)atl.face=mvx>0?1:-1; }
+  if(mobileMode && moveActive){ mvx=moveVec.x; mvy=moveVec.y; }
+  if(mvx||mvy){ let m=Math.hypot(mvx,mvy); if(m>1){ mvx/=m; mvy/=m; } atl.px+=mvx*4.0*d; atl.py+=mvy*4.0*d; if(Math.abs(mvx)>0.05)atl.face=mvx>0?1:-1; }
   atl.px=Math.max(40,Math.min(W-40,atl.px)); atl.py=Math.max(70,Math.min(H-40,atl.py));
 
   // fish swim & bounce
@@ -5677,10 +5814,14 @@ el('prestigeConfirm').onclick=()=>{ confirmPrestige(); };
 updateLoadBtn();
 setMode('menu');
 function endIntro(){ const iv=el('intro'); if(!iv||iv.classList.contains('hidden')||iv.__ending) return;
-  iv.__ending=true; iv.style.transition='opacity .6s ease'; iv.style.opacity='0'; setTimeout(()=>iv.classList.add('hidden'),600); }
+  iv.__ending=true; iv.style.transition='opacity .6s ease'; iv.style.opacity='0'; setTimeout(()=>{ iv.classList.add('hidden'); showModeChoose(); },600); }
+function showModeChoose(){ const c=el('modeChoose'); if(c) c.classList.remove('hidden'); }
 function startIntro(){ const iv=el('intro'); if(!iv) return; iv.addEventListener('click',endIntro);
   const kd=()=>{ endIntro(); window.removeEventListener('keydown',kd,true); }; window.addEventListener('keydown',kd,true);
   setTimeout(endIntro, 9200); }
+el('chooseDesktop').onclick=()=>{ setControlMode(false); const c=el('modeChoose'); if(c) c.classList.add('hidden'); };
+el('chooseMobile').onclick=()=>{ setControlMode(true); const c=el('modeChoose'); if(c) c.classList.add('hidden'); };
+{ const ch=el('chooseHint'); if(ch) ch.textContent = isTouch ? 'Looks like a touch device — Mobile is recommended.' : 'On a computer? Choose Desktop.'; }
 startIntro();
 </script>
 </body>
